@@ -1,0 +1,46 @@
+name: Build APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-pip
+        sudo apt install -y build-essential libssl-dev libffi-dev python3-dev
+        sudo apt install -y python3-setuptools git zip unzip
+        pip install --upgrade pip virtualenv
+        sudo apt install -y libsqlite3-dev
+        sudo apt install -y libgmp-dev
+
+    - name: Install buildozer and dependencies
+      run: |
+        pip install Cython==0.29.21
+        pip install kivy
+        pip install buildozer
+
+    - name: Initialize Buildozer
+      run: |
+        buildozer init
+        buildozer android debug
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: app-debug.apk
+        path: bin/android/*debug*.apk
